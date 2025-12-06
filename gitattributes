@@ -1,0 +1,7 @@
+# Ensure GitHub recognizes PHP and Markdown correctly
+*.php text eol=lf
+*.md  text eol=lf
+
+# Export-ignore dev files from archives
+.github/ export-ignore
+tests/  export-ignore

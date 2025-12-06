@@ -1,0 +1,37 @@
+# Composer
+/vendor/
+/composer.lock
+
+# PHPUnit
+/.phpunit.result.cache
+/coverage/
+
+# IDEs and editors
+/.idea/
+/.vscode/
+/nbproject/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and caches
+/storage/
+/bootstrap/cache/
+/*.log
+*.cache
+
+# Node (if examples add frontend)
+/node_modules/
+/npm-debug.log*
+/yarn.lock
+
+# PHP CS Fixer, Pint
+/.php_cs.cache
+/.php-cs-fixer.cache
+
+# Env files
+.env
+.env.*

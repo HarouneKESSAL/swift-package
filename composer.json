@@ -1,0 +1,48 @@
+{
+  "name": "harounekessal/swift-package",
+  "description": "Swift Storage Library (Laravel package) — production-grade storage with buckets, versioning, caching, IAM-style access control, events, CDN, encryption, search, and observability.",
+  "type": "library",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Haroune Kessal"
+    }
+  ],
+  "require": {
+    "php": "^8.2",
+    "illuminate/support": "^11.0",
+    "illuminate/contracts": "^11.0",
+    "illuminate/filesystem": "^11.0",
+    "league/flysystem": "^3.24",
+    "league/flysystem-aws-s3-v3": "^3.24",
+    "lcobucci/jwt": "^5.0",
+    "ext-openssl": "*",
+    "aws/aws-sdk-php": "^3.300"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0",
+    "orchestra/testbench": "^9.0",
+    "laravel/pint": "^1.16"
+  },
+  "autoload": {
+    "psr-4": {
+      "Swift\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Swift\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Swift\\SwiftServiceProvider"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit",
+    "lint": "vendor/bin/pint"
+  }
+}
