@@ -8,6 +8,9 @@ use Swift\Config\SwiftConfig;
 use Swift\Service\BucketService;
 use Swift\Service\StorageService;
 use Swift\Storage\StorageManager;
+use Swift\Encryption\EncryptionService;
+use Swift\CDN\CdnService;
+use Swift\Search\SearchService;
 use Illuminate\Support\ServiceProvider;
 
 final class SwiftServiceProvider extends ServiceProvider
@@ -34,6 +37,18 @@ final class SwiftServiceProvider extends ServiceProvider
                 $app->make(StorageManager::class),
                 $app->make(SwiftConfig::class)
             );
+        });
+
+        $this->app->singleton(EncryptionService::class, function ($app) {
+            return new EncryptionService($app->make(SwiftConfig::class));
+        });
+
+        $this->app->singleton(CdnService::class, function ($app) {
+            return new CdnService($app->make(SwiftConfig::class));
+        });
+
+        $this->app->singleton(SearchService::class, function ($app) {
+            return new SearchService($app->make(SwiftConfig::class));
         });
     }
 
