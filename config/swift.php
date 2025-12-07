@@ -19,4 +19,33 @@ return [
         'key_strategy' => env('SWIFT_KEY_STRATEGY', 'client'), // uuid, client, pattern
         'key_pattern' => env('SWIFT_KEY_PATTERN', '{bucket}/{uuid}'),
     ],
+
+    'cache' => [
+        'enabled' => env('SWIFT_CACHE_ENABLED', true),
+        'type' => env('SWIFT_CACHE_TYPE', 'array'), // array, redis
+        'cache_metadata' => env('SWIFT_CACHE_METADATA', true),
+        'cache_content' => env('SWIFT_CACHE_CONTENT', false),
+        'max_content_cache_size' => env('SWIFT_CACHE_MAX_CONTENT_SIZE', 10 * 1024 * 1024), // 10MB
+        'metadata_ttl' => env('SWIFT_CACHE_METADATA_TTL', '30m'),
+        'content_ttl' => env('SWIFT_CACHE_CONTENT_TTL', '10m'),
+        'redis' => [
+            'connection' => env('SWIFT_CACHE_REDIS_CONNECTION', 'default'),
+            'key_prefix' => env('SWIFT_CACHE_REDIS_PREFIX', 'swift:cache:'),
+        ],
+    ],
+
+    'access' => [
+        'enabled' => env('SWIFT_ACCESS_ENABLED', false),
+        'method' => env('SWIFT_ACCESS_METHOD', 'jwt'), // jwt, oauth2 (planned)
+        'jwt' => [
+            'secret' => env('SWIFT_JWT_SECRET', 'change-me'),
+            'token_validity_seconds' => env('SWIFT_JWT_TTL', 3600),
+            'issuer' => env('SWIFT_JWT_ISSUER', 'swift'),
+        ],
+        'rbac' => [
+            'enabled' => env('SWIFT_RBAC_ENABLED', true),
+            'default_role' => env('SWIFT_RBAC_DEFAULT_ROLE', 'USER'),
+            'admin_role' => env('SWIFT_RBAC_ADMIN_ROLE', 'ADMIN'),
+        ],
+    ],
 ];

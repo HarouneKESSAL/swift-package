@@ -13,6 +13,8 @@
     "illuminate/support": "^11.0",
     "illuminate/contracts": "^11.0",
     "illuminate/filesystem": "^11.0",
+    "illuminate/cache": "^11.0",
+    "illuminate/redis": "^11.0",
     "league/flysystem": "^3.24",
     "league/flysystem-aws-s3-v3": "^3.24",
     "lcobucci/jwt": "^5.0",
