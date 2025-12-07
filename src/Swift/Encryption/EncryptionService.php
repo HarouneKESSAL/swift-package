@@ -17,7 +17,7 @@ final class EncryptionService
 
     public function __construct(SwiftConfig $config)
     {
-        $encryptionConfig = $this->getEncryptionConfig($config);
+        $encryptionConfig = $config->encryption();
         $this->enabled = (bool) ($encryptionConfig['enabled'] ?? false);
         
         if ($this->enabled) {
@@ -29,15 +29,6 @@ final class EncryptionService
         } else {
             $this->masterKey = '';
         }
-    }
-
-    private function getEncryptionConfig(SwiftConfig $config): array
-    {
-        $ref = new \ReflectionClass($config);
-        $prop = $ref->getProperty('config');
-        $prop->setAccessible(true);
-        $data = $prop->getValue($config);
-        return (array) ($data['encryption'] ?? []);
     }
 
     private function deriveMasterKey(string $key): string

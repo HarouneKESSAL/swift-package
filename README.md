@@ -69,14 +69,120 @@ public function demo(BucketService $bucketService, StorageService $storageServic
 }
 ```
 
+## Advanced Features
+
+### Encryption
+
+Protect your data at rest with AES-256-GCM encryption and envelope key management:
+
+```php
+use Swift\Encryption\EncryptionService;
+
+public function demo(EncryptionService $encryption)
+{
+    // Encrypt sensitive data
+    $encrypted = $encryption->encrypt('sensitive data');
+    
+    // Decrypt when needed
+    $plaintext = $encryption->decrypt($encrypted);
+    
+    // Rotate encryption keys
+    $reencrypted = $encryption->rotateKey($encrypted);
+}
+```
+
+Configuration:
+
+```php
+'encryption' => [
+    'enabled' => env('SWIFT_ENCRYPTION_ENABLED', false),
+    'master_key' => env('SWIFT_ENCRYPTION_MASTER_KEY', ''),
+],
+```
+
+### CDN Support
+
+Generate signed URLs with HMAC-SHA256 signatures for secure CDN delivery:
+
+```php
+use Swift\CDN\CdnService;
+
+public function demo(CdnService $cdn)
+{
+    // Generate a signed URL (expires in 1 hour)
+    $url = $cdn->generateSignedUrl('bucket/file.jpg', 3600);
+    
+    // Generate with IP binding
+    $url = $cdn->generateSignedUrl('bucket/file.jpg', 3600, '192.168.1.1');
+    
+    // Verify a signed URL
+    $isValid = $cdn->verifySignedUrl($url, '192.168.1.1');
+    
+    // Invalidate CDN cache
+    $cdn->invalidate('bucket/file.jpg');
+}
+```
+
+Configuration:
+
+```php
+'cdn' => [
+    'enabled' => env('SWIFT_CDN_ENABLED', false),
+    'base_url' => env('SWIFT_CDN_BASE_URL', ''),
+    'secret' => env('SWIFT_CDN_SECRET', ''),
+    'default_ttl_seconds' => env('SWIFT_CDN_DEFAULT_TTL', 3600),
+    'bind_ip' => env('SWIFT_CDN_BIND_IP', false),
+],
+```
+
+### Search
+
+Index and search your objects using Meilisearch:
+
+```php
+use Swift\Search\SearchService;
+use Swift\Model\StorageObject;
+
+public function demo(SearchService $search, StorageObject $object)
+{
+    // Index an object
+    $search->indexObject($object);
+    
+    // Search for objects
+    $results = $search->search('query text', ['bucket' => 'my-bucket'], 20, 0);
+    
+    // Update object metadata in the index
+    $search->updateObjectMetadata('bucket', 'key', ['tag' => 'important']);
+    
+    // Remove from index
+    $search->removeObject('bucket', 'key');
+    
+    // Clear the entire index
+    $search->clearIndex();
+}
+```
+
+Configuration:
+
+```php
+'search' => [
+    'enabled' => env('SWIFT_SEARCH_ENABLED', false),
+    'provider' => env('SWIFT_SEARCH_PROVIDER', 'meilisearch'),
+    'meilisearch' => [
+        'host' => env('SWIFT_SEARCH_MEILISEARCH_HOST', 'http://localhost:7700'),
+        'api_key' => env('SWIFT_SEARCH_MEILISEARCH_API_KEY', ''),
+    ],
+],
+```
+
 ## Roadmap
 
-- Caching (array/Redis) for metadata/content
-- IAM policy engine (Allow/Deny with actions/resources)
+- ✅ Caching (array/Redis) for metadata/content
+- ✅ IAM policy engine (Allow/Deny with actions/resources)
 - Event notifications (Redis Streams, Kafka, RabbitMQ)
-- CDN signed URLs (HMAC-SHA256, expiration, optional client IP binding)
-- Encryption (AES-256-GCM + envelope keys, rotation)
-- Search (Meilisearch + Laravel Scout)
+- ✅ CDN signed URLs (HMAC-SHA256, expiration, optional client IP binding)
+- ✅ Encryption (AES-256-GCM + envelope keys, rotation)
+- ✅ Search (Meilisearch integration)
 - Observability (Prometheus/OpenTelemetry + audit logs)
 - REST example app in `examples/` with routes and controllers
 - OpenAPI via L5-Swagger

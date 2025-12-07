@@ -18,7 +18,7 @@ final class CdnService
 
     public function __construct(SwiftConfig $config)
     {
-        $cdnConfig = $this->getCdnConfig($config);
+        $cdnConfig = $config->cdn();
         $this->enabled = (bool) ($cdnConfig['enabled'] ?? false);
         
         if ($this->enabled) {
@@ -38,15 +38,6 @@ final class CdnService
         
         $this->defaultTtl = (int) ($cdnConfig['default_ttl_seconds'] ?? 3600);
         $this->bindIp = (bool) ($cdnConfig['bind_ip'] ?? false);
-    }
-
-    private function getCdnConfig(SwiftConfig $config): array
-    {
-        $ref = new \ReflectionClass($config);
-        $prop = $ref->getProperty('config');
-        $prop->setAccessible(true);
-        $data = $prop->getValue($config);
-        return (array) ($data['cdn'] ?? []);
     }
 
     public function isEnabled(): bool

@@ -14,7 +14,7 @@ final class SearchService
 
     public function __construct(SwiftConfig $config)
     {
-        $searchConfig = $this->getSearchConfig($config);
+        $searchConfig = $config->search();
         $this->enabled = (bool) ($searchConfig['enabled'] ?? false);
         
         if ($this->enabled) {
@@ -26,15 +26,6 @@ final class SearchService
                 throw new \RuntimeException("Unsupported search provider: {$provider}");
             }
         }
-    }
-
-    private function getSearchConfig(SwiftConfig $config): array
-    {
-        $ref = new \ReflectionClass($config);
-        $prop = $ref->getProperty('config');
-        $prop->setAccessible(true);
-        $data = $prop->getValue($config);
-        return (array) ($data['search'] ?? []);
     }
 
     public function isEnabled(): bool

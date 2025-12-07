@@ -49,4 +49,19 @@ final class SwiftConfig
     {
         return $this->config['storage']['key_pattern'] ?? '{bucket}/{uuid}';
     }
+
+    public function encryption(): array
+    {
+        return $this->config['encryption'] ?? [];
+    }
+
+    public function cdn(): array
+    {
+        return $this->config['cdn'] ?? [];
+    }
+
+    public function search(): array
+    {
+        return $this->config['search'] ?? [];
+    }
 }

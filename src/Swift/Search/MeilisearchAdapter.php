@@ -145,13 +145,18 @@ final class MeilisearchAdapter implements SearchAdapter
     {
         $url = rtrim($this->host, '/') . $path;
         
+        $headers = [
+            'Content-Type: application/json',
+        ];
+        
+        if (!empty($this->apiKey)) {
+            $headers[] = 'Authorization: Bearer ' . $this->apiKey;
+        }
+        
         $options = [
             'http' => [
                 'method' => $method,
-                'header' => [
-                    'Content-Type: application/json',
-                    'Authorization: Bearer ' . $this->apiKey,
-                ],
+                'header' => implode("\r\n", $headers),
                 'ignore_errors' => true,
             ],
         ];
@@ -161,6 +166,23 @@ final class MeilisearchAdapter implements SearchAdapter
         }
 
         $context = stream_context_create($options);
-        return @file_get_contents($url, false, $context);
+        $response = file_get_contents($url, false, $context);
+        
+        // Check HTTP response code
+        if ($response === false) {
+            return false;
+        }
+        
+        if (isset($http_response_header)) {
+            $statusLine = $http_response_header[0] ?? '';
+            if (preg_match('/HTTP\/\d\.\d\s+(\d+)/', $statusLine, $matches)) {
+                $statusCode = (int) $matches[1];
+                if ($statusCode >= 400) {
+                    return false;
+                }
+            }
+        }
+        
+        return $response;
     }
 }
