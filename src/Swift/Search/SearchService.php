@@ -18,7 +18,8 @@ final class SearchService
         $this->enabled = (bool) ($searchConfig['enabled'] ?? false);
         
         if ($this->enabled) {
-            $provider = $searchConfig['provider'] ?? 'meilisearch';
+            // Support both 'driver' and 'provider' config keys
+            $provider = $searchConfig['driver'] ?? $searchConfig['provider'] ?? 'meilisearch';
             
             if ($provider === 'meilisearch') {
                 $this->adapter = new MeilisearchAdapter($searchConfig['meilisearch'] ?? []);

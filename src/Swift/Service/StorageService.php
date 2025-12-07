@@ -10,10 +10,12 @@ use Swift\Caching\SwiftCache;
 use Swift\Model\ObjectVersion;
 use Swift\Model\StorageObject;
 use Swift\Storage\StorageManager;
+use Swift\Search\SearchService;
 
 final class StorageService
 {
     private ?SwiftCache $cache = null;
+    private ?SearchService $search = null;
 
     public function __construct(
         private readonly StorageManager $manager,
@@ -31,6 +33,12 @@ final class StorageService
                 metadataTtlSeconds: $cm->ttlSeconds((string) ($cacheCfg['metadata_ttl'] ?? '30m')),
                 contentTtlSeconds: $cm->ttlSeconds((string) ($cacheCfg['content_ttl'] ?? '10m')),
             );
+        }
+        
+        // Initialize search service if enabled
+        $searchCfg = $this->configData('search');
+        if (($searchCfg['enabled'] ?? false) === true) {
+            $this->search = new SearchService($this->config);
         }
     }
 
@@ -53,6 +61,8 @@ final class StorageService
         if (is_string($content)) {
             $this->cache?->putContent($bucket, $key, $content);
         }
+        // Index object for search if enabled
+        $this->search?->indexObject($obj);
         return $obj;
     }
 
@@ -63,6 +73,8 @@ final class StorageService
         if (!empty($metadata)) {
             $this->cache?->putMetadata($bucket, $key, $metadata);
         }
+        // Index object for search if enabled
+        $this->search?->indexObject($obj);
         return $obj;
     }
 
@@ -91,6 +103,8 @@ final class StorageService
     {
         $this->manager->provider()->deleteObject($bucket, $key, $versionId);
         $this->cache?->invalidateObject($bucket, $key);
+        // Remove from search index if enabled
+        $this->search?->removeObject($bucket, $key);
     }
 
     public function listObjectVersions(string $bucket, string $key): array
@@ -106,5 +120,37 @@ final class StorageService
     public function verifySignedUrl(string $signedUrl, string $bucket, string $key): bool
     {
         return $this->manager->provider()->verifySignedUrl($signedUrl, $bucket, $key);
+    }
+
+    /**
+     * Search for objects using the configured search service.
+     * 
+     * @param string $query Search query
+     * @param string|null $bucket Optional bucket filter
+     * @param string|null $prefix Optional prefix filter
+     * @param array $metadataFilter Optional metadata filters
+     * @return array Array of search results
+     */
+    public function searchObjects(string $query, ?string $bucket = null, ?string $prefix = null, array $metadataFilter = []): array
+    {
+        if ($this->search === null) {
+            return [];
+        }
+
+        $filters = [];
+        
+        if ($bucket !== null) {
+            $filters['bucket'] = $bucket;
+        }
+        
+        // Note: prefix filtering would need to be implemented in the search adapter
+        // For now, we'll rely on the search adapter's capabilities
+        
+        // Add metadata filters
+        foreach ($metadataFilter as $key => $value) {
+            $filters["metadata.{$key}"] = $value;
+        }
+
+        return $this->search->search($query, $filters);
     }
 }

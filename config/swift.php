@@ -51,12 +51,21 @@ return [
 
     'encryption' => [
         'enabled' => env('SWIFT_ENCRYPTION_ENABLED', false),
-        'master_key' => env('SWIFT_ENCRYPTION_MASTER_KEY', ''),
+        'algorithm' => env('SWIFT_ENCRYPTION_ALGORITHM', 'aes-256-gcm'),
+        'master_key' => env('SWIFT_ENCRYPTION_MASTER_KEY', ''), // base64-encoded 256-bit key
+        'key_rotation_days' => env('SWIFT_ENCRYPTION_KEY_ROTATION_DAYS', 90),
     ],
 
     'cdn' => [
         'enabled' => env('SWIFT_CDN_ENABLED', false),
         'base_url' => env('SWIFT_CDN_BASE_URL', ''),
+        'url' => [
+            'signing_key' => env('SWIFT_CDN_SIGNING_KEY', env('SWIFT_CDN_SECRET', '')), // HMAC signing key
+            'expiration' => env('SWIFT_CDN_URL_EXPIRATION', 3600), // default TTL in seconds
+            'algorithm' => env('SWIFT_CDN_URL_ALGORITHM', 'sha256'), // HMAC algorithm
+            'include_client_ip' => env('SWIFT_CDN_INCLUDE_CLIENT_IP', false), // IP binding
+        ],
+        // Legacy support
         'secret' => env('SWIFT_CDN_SECRET', ''),
         'default_ttl_seconds' => env('SWIFT_CDN_DEFAULT_TTL', 3600),
         'bind_ip' => env('SWIFT_CDN_BIND_IP', false),
@@ -64,10 +73,13 @@ return [
 
     'search' => [
         'enabled' => env('SWIFT_SEARCH_ENABLED', false),
-        'provider' => env('SWIFT_SEARCH_PROVIDER', 'meilisearch'),
+        'driver' => env('SWIFT_SEARCH_DRIVER', 'meilisearch'), // search driver
+        'provider' => env('SWIFT_SEARCH_PROVIDER', 'meilisearch'), // legacy alias for driver
         'meilisearch' => [
-            'host' => env('SWIFT_SEARCH_MEILISEARCH_HOST', 'http://localhost:7700'),
-            'api_key' => env('SWIFT_SEARCH_MEILISEARCH_API_KEY', ''),
+            'host' => env('MEILISEARCH_HOST', env('SWIFT_SEARCH_MEILISEARCH_HOST', 'http://localhost:7700')),
+            'key' => env('MEILISEARCH_KEY', env('SWIFT_SEARCH_MEILISEARCH_API_KEY', '')),
+            'api_key' => env('SWIFT_SEARCH_MEILISEARCH_API_KEY', ''), // legacy
+            'index' => env('MEILISEARCH_INDEX', env('SWIFT_SEARCH_MEILISEARCH_INDEX', 'swift_objects')),
         ],
     ],
 ];

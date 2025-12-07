@@ -16,7 +16,8 @@ final class MeilisearchAdapter implements SearchAdapter
     public function __construct(array $config)
     {
         $this->host = $config['host'] ?? 'http://localhost:7700';
-        $this->apiKey = $config['api_key'] ?? '';
+        // Support both 'key' and 'api_key' config keys
+        $this->apiKey = $config['key'] ?? $config['api_key'] ?? '';
     }
 
     public function indexObject(StorageObject $object): bool
