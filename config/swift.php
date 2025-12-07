@@ -48,4 +48,26 @@ return [
             'admin_role' => env('SWIFT_RBAC_ADMIN_ROLE', 'ADMIN'),
         ],
     ],
+
+    'encryption' => [
+        'enabled' => env('SWIFT_ENCRYPTION_ENABLED', false),
+        'master_key' => env('SWIFT_ENCRYPTION_MASTER_KEY', ''),
+    ],
+
+    'cdn' => [
+        'enabled' => env('SWIFT_CDN_ENABLED', false),
+        'base_url' => env('SWIFT_CDN_BASE_URL', ''),
+        'secret' => env('SWIFT_CDN_SECRET', ''),
+        'default_ttl_seconds' => env('SWIFT_CDN_DEFAULT_TTL', 3600),
+        'bind_ip' => env('SWIFT_CDN_BIND_IP', false),
+    ],
+
+    'search' => [
+        'enabled' => env('SWIFT_SEARCH_ENABLED', false),
+        'provider' => env('SWIFT_SEARCH_PROVIDER', 'meilisearch'),
+        'meilisearch' => [
+            'host' => env('SWIFT_SEARCH_MEILISEARCH_HOST', 'http://localhost:7700'),
+            'api_key' => env('SWIFT_SEARCH_MEILISEARCH_API_KEY', ''),
+        ],
+    ],
 ];
