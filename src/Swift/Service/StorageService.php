@@ -127,11 +127,10 @@ final class StorageService
      * 
      * @param string $query Search query
      * @param string|null $bucket Optional bucket filter
-     * @param string|null $prefix Optional prefix filter
      * @param array $metadataFilter Optional metadata filters
      * @return array Array of search results
      */
-    public function searchObjects(string $query, ?string $bucket = null, ?string $prefix = null, array $metadataFilter = []): array
+    public function searchObjects(string $query, ?string $bucket = null, array $metadataFilter = []): array
     {
         if ($this->search === null) {
             return [];
@@ -142,9 +141,6 @@ final class StorageService
         if ($bucket !== null) {
             $filters['bucket'] = $bucket;
         }
-        
-        // Note: prefix filtering would need to be implemented in the search adapter
-        // For now, we'll rely on the search adapter's capabilities
         
         // Add metadata filters
         foreach ($metadataFilter as $key => $value) {

@@ -65,7 +65,7 @@ return [
             'algorithm' => env('SWIFT_CDN_URL_ALGORITHM', 'sha256'), // HMAC algorithm
             'include_client_ip' => env('SWIFT_CDN_INCLUDE_CLIENT_IP', false), // IP binding
         ],
-        // Legacy support
+        // @deprecated Legacy config keys - use 'url' nested keys instead
         'secret' => env('SWIFT_CDN_SECRET', ''),
         'default_ttl_seconds' => env('SWIFT_CDN_DEFAULT_TTL', 3600),
         'bind_ip' => env('SWIFT_CDN_BIND_IP', false),
@@ -74,11 +74,11 @@ return [
     'search' => [
         'enabled' => env('SWIFT_SEARCH_ENABLED', false),
         'driver' => env('SWIFT_SEARCH_DRIVER', 'meilisearch'), // search driver
-        'provider' => env('SWIFT_SEARCH_PROVIDER', 'meilisearch'), // legacy alias for driver
+        'provider' => env('SWIFT_SEARCH_PROVIDER', 'meilisearch'), // @deprecated Use 'driver' instead
         'meilisearch' => [
             'host' => env('MEILISEARCH_HOST', env('SWIFT_SEARCH_MEILISEARCH_HOST', 'http://localhost:7700')),
             'key' => env('MEILISEARCH_KEY', env('SWIFT_SEARCH_MEILISEARCH_API_KEY', '')),
-            'api_key' => env('SWIFT_SEARCH_MEILISEARCH_API_KEY', ''), // legacy
+            'api_key' => env('SWIFT_SEARCH_MEILISEARCH_API_KEY', ''), // @deprecated Use 'key' instead
             'index' => env('MEILISEARCH_INDEX', env('SWIFT_SEARCH_MEILISEARCH_INDEX', 'swift_objects')),
         ],
     ],

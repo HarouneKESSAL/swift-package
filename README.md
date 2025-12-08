@@ -203,13 +203,13 @@ public function demo(StorageService $storage, SearchService $search)
     $results = $storage->searchObjects('quarterly report');
     
     // Search with bucket filter
-    $results = $storage->searchObjects('report', bucket: 'my-bucket');
+    $results = $storage->searchObjects('report', 'my-bucket');
     
     // Search with metadata filters
     $results = $storage->searchObjects(
         'report',
-        bucket: 'my-bucket',
-        metadataFilter: ['category' => 'reports']
+        'my-bucket',
+        ['category' => 'reports']
     );
     
     // Direct use of SearchService for advanced operations
