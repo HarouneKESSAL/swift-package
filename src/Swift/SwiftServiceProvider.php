@@ -28,7 +28,8 @@ final class SwiftServiceProvider extends ServiceProvider
         $this->app->singleton(StorageService::class, function ($app) {
             return new StorageService(
                 $app->make(StorageManager::class),
-                $app->make(SwiftConfig::class)
+                $app->make(SwiftConfig::class),
+                $app->make(SearchService::class)
             );
         });
 

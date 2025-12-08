@@ -20,6 +20,7 @@ final class StorageService
     public function __construct(
         private readonly StorageManager $manager,
         private readonly SwiftConfig $config,
+        ?SearchService $searchService = null,
     ) {
         $cacheCfg = $this->configData('cache');
         if (($cacheCfg['enabled'] ?? false) === true) {
@@ -35,10 +36,10 @@ final class StorageService
             );
         }
         
-        // Initialize search service if enabled
+        // Initialize search service if enabled (use injected service or create new one)
         $searchCfg = $this->configData('search');
         if (($searchCfg['enabled'] ?? false) === true) {
-            $this->search = new SearchService($this->config);
+            $this->search = $searchService ?? new SearchService($this->config);
         }
     }
 
@@ -125,10 +126,13 @@ final class StorageService
     /**
      * Search for objects using the configured search service.
      * 
+     * Note: Returns an empty array if search is not enabled in config.
+     * To enable search, set 'search.enabled' to true in config/swift.php.
+     * 
      * @param string $query Search query
      * @param string|null $bucket Optional bucket filter
-     * @param array $metadataFilter Optional metadata filters
-     * @return array Array of search results
+     * @param array $metadataFilter Optional metadata filters (e.g., ['author' => 'John', 'status' => 'published'])
+     * @return array Array of search results (empty if search is disabled)
      */
     public function searchObjects(string $query, ?string $bucket = null, array $metadataFilter = []): array
     {
