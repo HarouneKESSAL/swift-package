@@ -21,7 +21,7 @@
     "ext-openssl": "*",
     "aws/aws-sdk-php": "^3.300",
     "laravel/scout": "^10.0",
-    "meilisearch/meilisearch-php": "^0.28"
+    "meilisearch/meilisearch-php": "^1.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^11.0",
@@ -30,7 +30,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Swift\\": "src/"
+      "Swift\\": "src/Swift/"
     }
   },
   "autoload-dev": {
@@ -48,5 +48,10 @@
   "scripts": {
     "test": "vendor/bin/phpunit",
     "lint": "vendor/bin/pint"
+  },
+  "config": {
+    "allow-plugins": {
+      "php-http/discovery": true
+    }
   }
 }

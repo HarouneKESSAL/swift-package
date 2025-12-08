@@ -17,7 +17,7 @@ final class SwiftServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/swift.php', 'swift');
+        $this->mergeConfigFrom(__DIR__ . '/../../config/swift.php', 'swift');
 
         $this->app->singleton(SwiftConfig::class, fn () => new SwiftConfig(config('swift', [])));
 
@@ -55,7 +55,7 @@ final class SwiftServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->publishes([
-            __DIR__ . '/../config/swift.php' => config_path('swift.php'),
+            __DIR__ . '/../../config/swift.php' => config_path('swift.php'),
         ], 'swift-config');
     }
 }
