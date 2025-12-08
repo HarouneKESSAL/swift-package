@@ -22,7 +22,8 @@ final class CdnService
         $this->enabled = (bool) ($cdnConfig['enabled'] ?? false);
         
         if ($this->enabled) {
-            $secret = $cdnConfig['secret'] ?? '';
+            // Support both new and legacy config formats
+            $secret = $cdnConfig['url']['signing_key'] ?? $cdnConfig['secret'] ?? '';
             if (empty($secret)) {
                 throw new \RuntimeException('CDN is enabled but secret is not set');
             }
@@ -36,8 +37,9 @@ final class CdnService
             $this->baseUrl = '';
         }
         
-        $this->defaultTtl = (int) ($cdnConfig['default_ttl_seconds'] ?? 3600);
-        $this->bindIp = (bool) ($cdnConfig['bind_ip'] ?? false);
+        // Support both new and legacy config formats
+        $this->defaultTtl = (int) ($cdnConfig['url']['expiration'] ?? $cdnConfig['default_ttl_seconds'] ?? 3600);
+        $this->bindIp = (bool) ($cdnConfig['url']['include_client_ip'] ?? $cdnConfig['bind_ip'] ?? false);
     }
 
     public function isEnabled(): bool

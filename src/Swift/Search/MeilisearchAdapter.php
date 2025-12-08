@@ -8,15 +8,16 @@ use Swift\Model\StorageObject;
 
 final class MeilisearchAdapter implements SearchAdapter
 {
-    private const INDEX_NAME = 'swift_objects';
-    
+    private string $indexName;
     private string $host;
     private string $apiKey;
 
     public function __construct(array $config)
     {
         $this->host = $config['host'] ?? 'http://localhost:7700';
-        $this->apiKey = $config['api_key'] ?? '';
+        // Support both 'key' and 'api_key' config keys
+        $this->apiKey = $config['key'] ?? $config['api_key'] ?? '';
+        $this->indexName = $config['index'] ?? 'swift_objects';
     }
 
     public function indexObject(StorageObject $object): bool
@@ -26,7 +27,7 @@ final class MeilisearchAdapter implements SearchAdapter
         try {
             $response = $this->makeRequest(
                 'POST',
-                "/indexes/" . self::INDEX_NAME . "/documents",
+                "/indexes/{$this->indexName}/documents",
                 [$document]
             );
             
@@ -43,7 +44,7 @@ final class MeilisearchAdapter implements SearchAdapter
         try {
             $response = $this->makeRequest(
                 'DELETE',
-                "/indexes/" . self::INDEX_NAME . "/documents/{$documentId}"
+                "/indexes/{$this->indexName}/documents/{$documentId}"
             );
             
             return $response !== false;
@@ -72,7 +73,7 @@ final class MeilisearchAdapter implements SearchAdapter
         try {
             $response = $this->makeRequest(
                 'POST',
-                "/indexes/" . self::INDEX_NAME . "/search",
+                "/indexes/{$this->indexName}/search",
                 $params
             );
             
@@ -99,7 +100,7 @@ final class MeilisearchAdapter implements SearchAdapter
         try {
             $response = $this->makeRequest(
                 'PUT',
-                "/indexes/" . self::INDEX_NAME . "/documents",
+                "/indexes/{$this->indexName}/documents",
                 [$update]
             );
             
@@ -114,7 +115,7 @@ final class MeilisearchAdapter implements SearchAdapter
         try {
             $response = $this->makeRequest(
                 'DELETE',
-                "/indexes/" . self::INDEX_NAME . "/documents"
+                "/indexes/{$this->indexName}/documents"
             );
             
             return $response !== false;

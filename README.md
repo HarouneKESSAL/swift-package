@@ -73,7 +73,9 @@ public function demo(BucketService $bucketService, StorageService $storageServic
 
 ### Encryption
 
-Protect your data at rest with AES-256-GCM encryption and envelope key management:
+Protect your data at rest with AES-256-GCM encryption and envelope key management. The encryption service uses envelope encryption where data is encrypted with a randomly generated Data Encryption Key (DEK), and the DEK itself is encrypted with the master key.
+
+#### Usage Example
 
 ```php
 use Swift\Encryption\EncryptionService;
@@ -81,28 +83,46 @@ use Swift\Encryption\EncryptionService;
 public function demo(EncryptionService $encryption)
 {
     // Encrypt sensitive data
+    // Returns an array with: ciphertext, data_key, iv, tag, key_iv, key_tag
     $encrypted = $encryption->encrypt('sensitive data');
     
     // Decrypt when needed
     $plaintext = $encryption->decrypt($encrypted);
     
-    // Rotate encryption keys
+    // Rotate encryption keys (re-encrypt with a new DEK)
     $reencrypted = $encryption->rotateKey($encrypted);
 }
 ```
 
-Configuration:
+#### Configuration
+
+Set the following environment variables in your `.env` file:
+
+```env
+SWIFT_ENCRYPTION_ENABLED=true
+SWIFT_ENCRYPTION_ALGORITHM=aes-256-gcm
+SWIFT_ENCRYPTION_MASTER_KEY=your-base64-encoded-256-bit-key-here
+SWIFT_ENCRYPTION_KEY_ROTATION_DAYS=90
+```
+
+In `config/swift.php`:
 
 ```php
 'encryption' => [
     'enabled' => env('SWIFT_ENCRYPTION_ENABLED', false),
-    'master_key' => env('SWIFT_ENCRYPTION_MASTER_KEY', ''),
+    'algorithm' => env('SWIFT_ENCRYPTION_ALGORITHM', 'aes-256-gcm'),
+    'master_key' => env('SWIFT_ENCRYPTION_MASTER_KEY', ''), // base64-encoded 256-bit key
+    'key_rotation_days' => env('SWIFT_ENCRYPTION_KEY_ROTATION_DAYS', 90),
 ],
 ```
 
-### CDN Support
+**Note:** Generate a secure master key using: `openssl rand -base64 32`
 
-Generate signed URLs with HMAC-SHA256 signatures for secure CDN delivery:
+### CDN Signed URLs
+
+Generate secure, time-limited URLs with HMAC-SHA256 signatures for CDN delivery. Supports optional client IP binding for additional security.
+
+#### Usage Example
 
 ```php
 use Swift\CDN\CdnService;
@@ -111,50 +131,94 @@ public function demo(CdnService $cdn)
 {
     // Generate a signed URL (expires in 1 hour)
     $url = $cdn->generateSignedUrl('bucket/file.jpg', 3600);
+    // Result: https://cdn.example.com/bucket/file.jpg?expires=1234567890&signature=abc123...
     
-    // Generate with IP binding
-    $url = $cdn->generateSignedUrl('bucket/file.jpg', 3600, '192.168.1.1');
+    // Generate with IP binding for extra security
+    $clientIp = request()->ip(); // or '192.168.1.1'
+    $url = $cdn->generateSignedUrl('bucket/file.jpg', 3600, $clientIp);
     
-    // Verify a signed URL
-    $isValid = $cdn->verifySignedUrl($url, '192.168.1.1');
+    // Verify a signed URL (server-side)
+    $isValid = $cdn->verifySignedUrl($url);
     
-    // Invalidate CDN cache
+    // Verify with IP binding
+    $isValid = $cdn->verifySignedUrl($url, $clientIp);
+    
+    // Invalidate CDN cache for a specific path
     $cdn->invalidate('bucket/file.jpg');
 }
 ```
 
-Configuration:
+#### Configuration
+
+Set the following environment variables in your `.env` file:
+
+```env
+SWIFT_CDN_ENABLED=true
+SWIFT_CDN_BASE_URL=https://cdn.example.com
+SWIFT_CDN_SIGNING_KEY=your-secure-random-signing-key
+SWIFT_CDN_URL_EXPIRATION=3600
+SWIFT_CDN_URL_ALGORITHM=sha256
+SWIFT_CDN_INCLUDE_CLIENT_IP=false
+```
+
+In `config/swift.php`:
 
 ```php
 'cdn' => [
     'enabled' => env('SWIFT_CDN_ENABLED', false),
     'base_url' => env('SWIFT_CDN_BASE_URL', ''),
-    'secret' => env('SWIFT_CDN_SECRET', ''),
-    'default_ttl_seconds' => env('SWIFT_CDN_DEFAULT_TTL', 3600),
-    'bind_ip' => env('SWIFT_CDN_BIND_IP', false),
+    'url' => [
+        'signing_key' => env('SWIFT_CDN_SIGNING_KEY', ''), // HMAC signing key
+        'expiration' => env('SWIFT_CDN_URL_EXPIRATION', 3600), // default TTL in seconds
+        'algorithm' => env('SWIFT_CDN_URL_ALGORITHM', 'sha256'), // HMAC algorithm
+        'include_client_ip' => env('SWIFT_CDN_INCLUDE_CLIENT_IP', false), // IP binding
+    ],
 ],
 ```
 
-### Search
+**Note:** Generate a secure signing key using: `openssl rand -hex 32`
 
-Index and search your objects using Meilisearch:
+### Search (Meilisearch)
+
+Index and search your storage objects using Meilisearch. Objects are automatically indexed on upload and removed from the index on deletion when search is enabled.
+
+#### Usage Example
 
 ```php
+use Swift\Service\StorageService;
 use Swift\Search\SearchService;
-use Swift\Model\StorageObject;
 
-public function demo(SearchService $search, StorageObject $object)
+public function demo(StorageService $storage, SearchService $search)
 {
-    // Index an object
-    $search->indexObject($object);
+    // Upload an object (automatically indexed if search is enabled)
+    $storage->uploadObject(
+        'my-bucket',
+        'documents/report.pdf',
+        $fileContent,
+        'application/pdf',
+        ['author' => 'John Doe', 'category' => 'reports']
+    );
     
-    // Search for objects
+    // Search using StorageService (recommended)
+    $results = $storage->searchObjects('quarterly report');
+    
+    // Search with bucket filter
+    $results = $storage->searchObjects('report', 'my-bucket');
+    
+    // Search with metadata filters
+    $results = $storage->searchObjects(
+        'report',
+        'my-bucket',
+        ['category' => 'reports']
+    );
+    
+    // Direct use of SearchService for advanced operations
     $results = $search->search('query text', ['bucket' => 'my-bucket'], 20, 0);
     
     // Update object metadata in the index
     $search->updateObjectMetadata('bucket', 'key', ['tag' => 'important']);
     
-    // Remove from index
+    // Manually remove from index (automatically done on delete)
     $search->removeObject('bucket', 'key');
     
     // Clear the entire index
@@ -162,17 +226,35 @@ public function demo(SearchService $search, StorageObject $object)
 }
 ```
 
-Configuration:
+#### Configuration
+
+Set the following environment variables in your `.env` file:
+
+```env
+SWIFT_SEARCH_ENABLED=true
+SWIFT_SEARCH_DRIVER=meilisearch
+MEILISEARCH_HOST=http://localhost:7700
+MEILISEARCH_KEY=your-meilisearch-master-key
+MEILISEARCH_INDEX=swift_objects
+```
+
+In `config/swift.php`:
 
 ```php
 'search' => [
     'enabled' => env('SWIFT_SEARCH_ENABLED', false),
-    'provider' => env('SWIFT_SEARCH_PROVIDER', 'meilisearch'),
+    'driver' => env('SWIFT_SEARCH_DRIVER', 'meilisearch'),
     'meilisearch' => [
-        'host' => env('SWIFT_SEARCH_MEILISEARCH_HOST', 'http://localhost:7700'),
-        'api_key' => env('SWIFT_SEARCH_MEILISEARCH_API_KEY', ''),
+        'host' => env('MEILISEARCH_HOST', 'http://localhost:7700'),
+        'key' => env('MEILISEARCH_KEY', ''),
+        'index' => env('MEILISEARCH_INDEX', 'swift_objects'),
     ],
 ],
+```
+
+**Note:** Ensure Meilisearch is running and accessible. You can start it with Docker:
+```bash
+docker run -d -p 7700:7700 getmeili/meilisearch:latest
 ```
 
 ## Roadmap
